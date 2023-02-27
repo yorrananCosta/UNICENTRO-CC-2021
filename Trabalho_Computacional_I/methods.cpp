@@ -26,30 +26,32 @@ results bisection(double precision, double a, double b, int max_interactions)
     results result;
     double fbegin, fmid, mid, root;
     int k = 0;
-    if (abs(b-a) < precision)
+    if (fabs(b-a) < precision)
     {
-        root = a;
+        root = (a+b)/2;
         result.root = root;
         result.final_interaction = k;
         return result;
     }
-    while (abs(b-a) > precision && k < max_interactions)
+    else
     {
-        k++;
-        fbegin = f(a);
-        mid = (a+b)/2;
-        fmid = f(mid);
-            if ((fbegin*fmid) < 0)
-            {
+        while (fabs(b-a) > precision && k < max_interactions)
+        {
+            k++;
+            fbegin = f(a);
+            mid = (a+b)/2;
+            fmid = f(mid);
+            if((fbegin*fmid) < 0){
                 b = mid;
                 root = b;
-            }
-            else
-            {
+            }else{
                 a = mid;
                 root = a;
             }
+        }
+        
     }
+    
     result.root = root;
     result.final_interaction = k;
     return result;
@@ -59,24 +61,20 @@ results FPI(double precision, double a, double b, int max_interactions)
 {
     results result;
     int k = 1;
-    double root, x0 = a, x1 = b;
-    if (f (x0) < precision)
-    {
-        root = x1;
-        result.root = root;
+    double root, x0 = a, x1 = b, module;
+    if(fabs(x0) < precision){
+        return x0;
+    }else{
+        do{
+            k++;
+            x1 = dx(x0);
+            module = x1 - x0;
+            x0 = x1;
+        }while(fabs(f(x1)) > precision && fabs(module) > precision && k < max_interactions);
+        result.root = x1;
         result.final_interaction = k;
         return result;
     }
-    x1 = dx (x0);
-    while (abs(x1 - x0) > precision && k  < max_interactions)
-    {
-        x0 = x1;
-        k++;
-    }
-    root = x1;
-    result.root = root;
-    result.final_interaction = k;
-    return result;
 }
 
 results newton(double precision, double x0, int max_interactions)
@@ -84,14 +82,13 @@ results newton(double precision, double x0, int max_interactions)
     int k;
     double root, fx_derivative, fx, x1;
     results result;
-    fx = f(x0);
-    if (abs(fx) > precision)
+    if(fabs(fx) > precision)
     {
         k = 1;
         fx_derivative = dx(x0);
         x1 = x0 - (fx/fx_derivative);
         fx = f(x1);
-        while (abs(fx) > precision && abs(x1-x0) > precision && k < max_interactions)
+        while(fabs(fx) > precision && fabs((x1-x0)) > precision && k <= it)
         {
             k++;
             x0 = x1;
@@ -99,103 +96,97 @@ results newton(double precision, double x0, int max_interactions)
             x1 = x0 - (fx/fx_derivative);
             fx = f(x1);
         }
-        root = x1;
+        result.root = x1;
+        result.final_interaction = k;
+        return result;
     }
     else
     {
-        root = 0;
+        result.root = x0;
+        result.final_interaction = k;
+        return result;
     }
-    result.root = root;
-    result.final_interaction = k;
-    return result;
 }
 
 results secante (double precision, double x0, double x1, int max_interactions)
 {
     int k = 0;
-    double x2, root, fx1, fx0;
+    double x2, root, fx1, fx0, module;
     results result;
-    if (abs(f(x0)) > precision)
+    if(fabs(f(x0)) < precision)
     {
-        root = x0;
-        result.root = root;
+        result.root = x0;
         result.final_interaction = k;
         return result;
     }
-    if (abs(f(x1)) > precision)
+    else if (fabs(f(x1)) < precision || fabs((x1-x0)) < precision)
     {
-        root = x1;
-        result.root = root;
+        result.root = x1;
         result.final_interaction = k;
         return result;
     }
-    k = 1;
-    label: {
-        x2 = x1 - (fx1*(x1-x0))/(fx1 - fx0); 
-        if (abs(f(x2)) < precision || abs(x2-x1) < precision || k > max_interactions)
+    else
+    {
+        do
         {
-            root = x2;
-            result.root = root;
-            result.final_interaction = k;
-            return result;
-        }
-        x0 = x1;
-        k++;
+            k++;
+            x2 = x1 - ((f(x1)*(x1-x0))/(f(x1)-f(x0)));
+            module = x2 - x1;
+            x0 = x1;
+            x1 = x2;
+        }while(fabs
+(f(x2)) > precision && fabs
+(m) > precision && k < it);
+        result.root = x2;
+        result.final_interaction = k;
+        return result;
     }
-    goto label;
-    root = x2;
     
 }
 
 results regula_falsi (double precision_one, double precision_two, double a, double b, int max_interactions)
 {
     results result;
-    double root, M, x;
-    int k = 1;
-    if (abs(b-a) < precision_one)
+    double root, x, module;
+    int k = 0;
+    if(fabs((b-a)) < delta)
     {
-        root = a;
-        result.root = root;
+        result.root = (a+b)/2;
         result.final_interaction = k;
         return result;
     }
-    if (abs(f(a)) < precision_two)
+    else if(fabs(f(a)) < delta)
     {
-        root = b;
-        result.root = root;
+        result.root = a;
+        result.final_interaction = k;
+        return result;
+    }else if(fabs(f(b)) < delta)
+    {
+        result.root = b;
         result.final_interaction = k;
         return result;
     }
-    label1: {
-        M = f(a);
-    }
-    x = (a*f(b)-b*f(a))/(f(b) - f(a));
-    if (abs(f(x)) < precision_two || k > max_interactions)
+    else
     {
-        root = x;
-        result.root = root;
-        result.final_interaction = k;
-        return result;
-    }
-    if (M*f(x) > 0)
-    {
-        a = x;
-        result.root = root;
-        result.final_interaction = k;
-        return result;
-        goto label1;
-    }
-    b = x;
-    label2: {
-        if (abs(b-a) < precision_one)
+        do
         {
-            root = a;
-            result.root = root;
-            result.final_interaction = k;
-            return result;
-        }
+            k++;
+            m = f(a);
+            x = ((a*f(b)) - (b*f(a)))/(f(b) - f(a));
+            if(m*f(x)>0){
+                a = x;
+            }else{
+                b = x;
+            }
+            if(fabs((b-a)) < delta){
+                result.root = (a+b)/2;
+                result.final_interaction = k;
+                return result;
+            }
+        }while(fabs(f(x)) > delta && k < it);
+        result.root = x;
+        result.final_interaction = k;
+        return result;
     }
-    k++;
-    goto label1;
         
 }
