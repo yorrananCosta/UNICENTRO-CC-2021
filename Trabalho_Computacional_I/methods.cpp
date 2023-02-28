@@ -1,26 +1,34 @@
 #include <cmath>
+#include <fstream>
 #include "functions.h"
 
-typedef struct 
-{
-    double root = 0.0;
-    int final_interaction = 0.0;
-}results;
+using namespace std;
 
+ofstream file;
+// responsável por armazenar os resultados
+void archive_results(double root, int interactions)
+{
+    file.open("results.txt", ios_base::app);
+    file << "raiz: " << root << " quantidade de interacoes: " << interactions <<"\n";
+    file.close();
+}
+// Abaixo está definido os cálculos das funções
+
+//f(x) = e^(x^2) - cos(x)
 double f(double x)
 {
     double y;
     y = (exp(-pow(x, 2)) - cos(x));
     return y;
 }
-
+//f'(x) = (e^(x^2))(-2x) - sin(x)
 double dx(double x)
 {
     double y;
     y = exp(-pow(x, 2))*(-2*x) + sin(x);
     return y;
 }
-
+// phi = cos(x) - e^(-x^2)
 double phi(double x)
 {
     double phi;
@@ -28,17 +36,14 @@ double phi(double x)
     return phi;
 }
 
-results bisection(double precision, double a, double b, int max_interactions)
+void bisection(double precision, double a, double b, int max_interactions)
 {
-    results result;
     double fbegin, fmid, mid, root;
     int k = 0;
     if (fabs(b-a) < precision)
     {
         root = (a+b)/2;
-        result.root = root;
-        result.final_interaction = k;
-        return result;
+        archive_results(root, k);
     }
     else
     {
@@ -55,47 +60,40 @@ results bisection(double precision, double a, double b, int max_interactions)
                 a = mid;
                 root = a;
             }
+            archive_results(root, k);
         }
         
     }
-    
-    result.root = root;
-    result.final_interaction = k;
-    return result;
 }
 
-results FPI(double precision, double a, double b, int max_interactions)
+void FPI(double precision, double a, double b, int max_interactions)
 {
-    results result;
     int k = 0;
     double root, x0 = a, x1 = b, module;
     if(fabs(x0) < precision){
-        result.root = x0;
-        result.final_interaction = k;
+        archive_results(x0, k);
     }else{
         do{
             k++;
             x1 = phi(x0);
             module = x1 - x0;
             x0 = x1;
+            archive_results(x1, k);
         }while(fabs(f(x1)) > precision && fabs(module) > precision && k < max_interactions);
-        result.root = x1;
-        result.final_interaction = k;
-        return result;
     }
 }
 
-results newton(double precision, double x0, int max_interactions)
+void newton(double precision, double x0, int max_interactions)
 {
-    int k;
-    double root, fx_derivative, fx, x1;
-    results result;
+    int k = 0;
+    double root, fx_derivative, fx = f(x0), x1;
     if(fabs(fx) > precision)
     {
         k = 1;
         fx_derivative = dx(x0);
         x1 = x0 - (fx/fx_derivative);
         fx = f(x1);
+        archive_results(x1, k);
         while(fabs(fx) > precision && fabs((x1-x0)) > precision && k <= max_interactions)
         {
             k++;
@@ -103,35 +101,26 @@ results newton(double precision, double x0, int max_interactions)
             fx_derivative = dx(x0);
             x1 = x0 - (fx/fx_derivative);
             fx = f(x1);
+            archive_results(x1, k);
         }
-        result.root = x1;
-        result.final_interaction = k;
-        return result;
     }
     else
     {
-        result.root = x0;
-        result.final_interaction = k;
-        return result;
+        archive_results(x0, k);
     }
 }
 
-results secante (double precision, double x0, double x1, int max_interactions)
+void secante (double precision, double x0, double x1, int max_interactions)
 {
     int k = 0;
     double x2, root, fx1, fx0, module;
-    results result;
     if(fabs(f(x0)) < precision)
     {
-        result.root = x0;
-        result.final_interaction = k;
-        return result;
+        archive_results(x0, k);
     }
     else if (fabs(f(x1)) < precision || fabs((x1-x0)) < precision)
     {
-        result.root = x1;
-        result.final_interaction = k;
-        return result;
+        archive_results(x1, k);
     }
     else
     {
@@ -142,37 +131,25 @@ results secante (double precision, double x0, double x1, int max_interactions)
             module = x2 - x1;
             x0 = x1;
             x1 = x2;
-        }while(fabs
-(f(x2)) > precision && fabs
-(module) > precision && k < max_interactions);
-        result.root = x2;
-        result.final_interaction = k;
-        return result;
-    }
-    
+            archive_results(x2, k);
+        }while(fabs(f(x2)) > precision && fabs(module) > precision && k < max_interactions);
+    } 
 }
 
-results regula_falsi (double precision_one, double precision_two, double a, double b, int max_interactions)
+void regula_falsi (double precision_one, double a, double b, int max_interactions)
 {
-    results result;
     double root, x, module;
     int k = 0;
     if(fabs((b-a)) < precision_one)
     {
-        result.root = (a+b)/2;
-        result.final_interaction = k;
-        return result;
+        archive_results(((a+b)/2), k);
     }
     else if(fabs(f(a)) < precision_one)
     {
-        result.root = a;
-        result.final_interaction = k;
-        return result;
+        archive_results(a, k);
     }else if(fabs(f(b)) < precision_one)
     {
-        result.root = b;
-        result.final_interaction = k;
-        return result;
+        archive_results(b, k);
     }
     else
     {
@@ -187,14 +164,12 @@ results regula_falsi (double precision_one, double precision_two, double a, doub
                 b = x;
             }
             if(fabs((b-a)) < precision_one){
-                result.root = (a+b)/2;
-                result.final_interaction = k;
-                return result;
+                archive_results(((a+b)/2), k);
+                break;
             }
+            archive_results(x, k);
         }while(fabs(f(x)) > precision_one && k < max_interactions);
-        result.root = x;
-        result.final_interaction = k;
-        return result;
+
     }
         
 }

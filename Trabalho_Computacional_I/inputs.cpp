@@ -2,6 +2,7 @@
 
 using namespace std;
 
+// Função responsável por mostrar o menu e retornar a opção selecionada
 int select_operation()
 {
     int option;
@@ -20,8 +21,10 @@ int select_operation()
     return option;
 }
 
-void regula_falsi_input(double *left_interval, double *right_interval, double *precision_one, 
-double *precision_two, int *max_interactions)
+/*
+    As três funções abaixo recebem os valores necessários para serem ultilizadas nas funções, para isso ela chama os endereços de cada parâmetro ao invés de copiar os valor em uma passagem de parâmetros tradicional.
+*/
+void regula_falsi_input(double *left_interval, double *right_interval, double *precision, int *max_interactions)
 {
     printf("\n");
     printf("DIgite o primeiro valor do intervalo:\n");
@@ -30,10 +33,8 @@ double *precision_two, int *max_interactions)
     cin >> *right_interval;
     printf("Digite o numero maximo de interacoes:\n");
     cin >> *max_interactions;
-    printf("Digite a primeira precisao desejada:\n");
-    cin >> *precision_one;
-    printf("Digite a segunda precisao desejada:\n");
-    cin >> *precision_two;
+    printf("Digite a precisao desejada:\n");
+    cin >> *precision;
 }
 
 void secante_FPI_and_bisection_input(double *precision, double *left_interval, double *right_interval, int *max_interactions)

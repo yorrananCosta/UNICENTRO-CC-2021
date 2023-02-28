@@ -1,1 +1,1 @@
-raiz: 0 quantidade de interacoes: 0
+raiz: 1.44912 quantidade de interacoes: 1
