@@ -10,15 +10,22 @@ typedef struct
 double f(double x)
 {
     double y;
-    y = x*log10(x-1);
+    y = (exp(-pow(x, 2)) - cos(x));
     return y;
 }
 
 double dx(double x)
 {
     double y;
-    y = log(x-1) + x/(x-1);
+    y = exp(-pow(x, 2))*(-2*x) + sin(x);
     return y;
+}
+
+double phi(double x)
+{
+    double phi;
+    phi = cos(x) - exp(-pow(x, 2));
+    return phi;
 }
 
 results bisection(double precision, double a, double b, int max_interactions)
@@ -60,14 +67,15 @@ results bisection(double precision, double a, double b, int max_interactions)
 results FPI(double precision, double a, double b, int max_interactions)
 {
     results result;
-    int k = 1;
+    int k = 0;
     double root, x0 = a, x1 = b, module;
     if(fabs(x0) < precision){
-        return x0;
+        result.root = x0;
+        result.final_interaction = k;
     }else{
         do{
             k++;
-            x1 = dx(x0);
+            x1 = phi(x0);
             module = x1 - x0;
             x0 = x1;
         }while(fabs(f(x1)) > precision && fabs(module) > precision && k < max_interactions);
@@ -88,7 +96,7 @@ results newton(double precision, double x0, int max_interactions)
         fx_derivative = dx(x0);
         x1 = x0 - (fx/fx_derivative);
         fx = f(x1);
-        while(fabs(fx) > precision && fabs((x1-x0)) > precision && k <= it)
+        while(fabs(fx) > precision && fabs((x1-x0)) > precision && k <= max_interactions)
         {
             k++;
             x0 = x1;
@@ -136,7 +144,7 @@ results secante (double precision, double x0, double x1, int max_interactions)
             x1 = x2;
         }while(fabs
 (f(x2)) > precision && fabs
-(m) > precision && k < it);
+(module) > precision && k < max_interactions);
         result.root = x2;
         result.final_interaction = k;
         return result;
@@ -149,18 +157,18 @@ results regula_falsi (double precision_one, double precision_two, double a, doub
     results result;
     double root, x, module;
     int k = 0;
-    if(fabs((b-a)) < delta)
+    if(fabs((b-a)) < precision_one)
     {
         result.root = (a+b)/2;
         result.final_interaction = k;
         return result;
     }
-    else if(fabs(f(a)) < delta)
+    else if(fabs(f(a)) < precision_one)
     {
         result.root = a;
         result.final_interaction = k;
         return result;
-    }else if(fabs(f(b)) < delta)
+    }else if(fabs(f(b)) < precision_one)
     {
         result.root = b;
         result.final_interaction = k;
@@ -171,19 +179,19 @@ results regula_falsi (double precision_one, double precision_two, double a, doub
         do
         {
             k++;
-            m = f(a);
+            module = f(a);
             x = ((a*f(b)) - (b*f(a)))/(f(b) - f(a));
-            if(m*f(x)>0){
+            if(module*f(x)>0){
                 a = x;
             }else{
                 b = x;
             }
-            if(fabs((b-a)) < delta){
+            if(fabs((b-a)) < precision_one){
                 result.root = (a+b)/2;
                 result.final_interaction = k;
                 return result;
             }
-        }while(fabs(f(x)) > delta && k < it);
+        }while(fabs(f(x)) > precision_one && k < max_interactions);
         result.root = x;
         result.final_interaction = k;
         return result;
